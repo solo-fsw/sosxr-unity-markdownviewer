@@ -3,15 +3,15 @@
 using Markdig.Renderers;
 using Markdig.Syntax;
 
+
 namespace MG.MDV
 {
     ////////////////////////////////////////////////////////////////////////////////
     // <ul><li>...</li></ul>
-    /// <see cref="Markdig.Renderers.Html.ListRenderer"/>
-
+    /// <see cref="Markdig.Renderers.Html.ListRenderer" />
     public class RendererBlockList : MarkdownObjectRenderer<RendererMarkdown, ListBlock>
     {
-        protected override void Write( RendererMarkdown renderer, ListBlock block )
+        protected override void Write(RendererMarkdown renderer, ListBlock block)
         {
             var layout = renderer.Layout;
 
@@ -23,15 +23,15 @@ namespace MG.MDV
 
             var prefixStyle = renderer.Style;
 
-            if( !block.IsOrdered )
+            if (!block.IsOrdered)
             {
                 prefixStyle.Bold = true;
             }
 
-            for( var i = 0; i < block.Count; i++ )
+            for (var i = 0; i < block.Count; i++)
             {
-                layout.Prefix( block.IsOrdered ? (i+1).ToString() + "." : "\u2022", prefixStyle );
-                renderer.WriteChildren( block[ i ] as ListItemBlock );
+                layout.Prefix(block.IsOrdered ? (i + 1) + "." : "\u2022", prefixStyle);
+                renderer.WriteChildren(block[i] as ListItemBlock);
             }
 
             renderer.ConsumeSpace = prevImplicit;

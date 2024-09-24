@@ -1,24 +1,27 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
+
 namespace MG.MDV
 {
-    [CustomEditor( typeof( MarkdownAsset ) )]
+    [CustomEditor(typeof(MarkdownAsset))]
     public class MarkdownEditorAsset : Editor
     {
         public GUISkin SkinLight;
         public GUISkin SkinDark;
 
-        MarkdownViewer mViewer;
+        private MarkdownViewer mViewer;
+
 
         protected void OnEnable()
         {
-            var content = ( target as MarkdownAsset ).text;
-            var path    = AssetDatabase.GetAssetPath( target );
+            var content = (target as MarkdownAsset).text;
+            var path = AssetDatabase.GetAssetPath(target);
 
-            mViewer = new MarkdownViewer( Preferences.DarkSkin ? SkinDark : SkinLight, path, content );
+            mViewer = new MarkdownViewer(Preferences.DarkSkin ? SkinDark : SkinLight, path, content);
             EditorApplication.update += UpdateRequests;
         }
+
 
         protected void OnDisable()
         {
@@ -26,15 +29,18 @@ namespace MG.MDV
             mViewer = null;
         }
 
+
         public override bool UseDefaultMargins()
         {
             return false;
         }
 
+
         protected override void OnHeaderGUI()
         {
             //base.OnHeaderGUI(); 
         }
+
 
         public override void OnInspectorGUI()
         {
@@ -42,9 +48,9 @@ namespace MG.MDV
         }
 
 
-        void UpdateRequests()
+        private void UpdateRequests()
         {
-            if( mViewer.Update() )
+            if (mViewer.Update())
             {
                 Repaint();
             }

@@ -3,25 +3,76 @@
 using System.Text;
 using UnityEngine;
 
+
 namespace MG.MDV
 {
     public class LayoutBuilder : IBuilder
     {
         ////////////////////////////////////////////////////////////////////////////////
+        // private
+
+
+        private readonly Context mContext;
+
+        private Style mStyle;
+        private string mLink;
+        private string mTooltip;
+        private readonly StringBuilder mWord;
+        private float mIndent;
+
+        private readonly BlockContainer mDocument;
+        private BlockContainer mCurrentContainer;
+        private Block mCurrentBlock;
+        private BlockContent mCurrentContent;
+
+
+        //------------------------------------------------------------------------------
+
+
+        public LayoutBuilder(Context context)
+        {
+            mContext = context;
+
+            mStyle = new Style();
+            mLink = null;
+            mTooltip = null;
+            mWord = new StringBuilder(1024);
+
+            mIndent = 0.0f;
+
+            mDocument = new BlockContainer(mIndent);
+            mCurrentContainer = mDocument;
+            mCurrentBlock = null;
+            mCurrentContent = null;
+        }
+
+
+        private Block CurrentBlock
+        {
+            get => mCurrentBlock;
+
+            set
+            {
+                mCurrentBlock = value;
+                mCurrentContent = mCurrentBlock as BlockContent;
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
         // IMarkdownInterface
 
-        public void Text( string text, Style style, string link, string tooltip )
+
+        public void Text(string text, Style style, string link, string tooltip)
         {
-            if( mCurrentContent == null )
+            if (mCurrentContent == null)
             {
                 NewContentBlock();
             }
 
-            mContext.Apply( style );
+            mContext.Apply(style);
 
-            if( style.Size > 0 )
+            if (style.Size > 0)
             {
-                if( mCurrentContent.ID == null )
+                if (mCurrentContent.ID == null)
                 {
                     mCurrentContent.ID = "#";
                 }
@@ -30,30 +81,30 @@ namespace MG.MDV
                     mCurrentContent.ID += "-";
                 }
 
-                mCurrentContent.ID += text.Trim().Replace( ' ', '-' ).ToLower();
+                mCurrentContent.ID += text.Trim().Replace(' ', '-').ToLower();
             }
 
-            mStyle   = style;
-            mLink    = link;
+            mStyle = style;
+            mLink = link;
             mTooltip = tooltip;
 
-            for( var i = 0; i < text.Length; i++ )
+            for (var i = 0; i < text.Length; i++)
             {
                 var ch = text[i];
 
-                if( ch == '\n' )
+                if (ch == '\n')
                 {
                     AddWord();
                     NewLine();
                 }
-                else if( char.IsWhiteSpace( ch ) )
+                else if (char.IsWhiteSpace(ch))
                 {
-                    mWord.Append( ' ' );
+                    mWord.Append(' ');
                     AddWord();
                 }
                 else
                 {
-                    mWord.Append( ch );
+                    mWord.Append(ch);
                 }
             }
 
@@ -63,23 +114,26 @@ namespace MG.MDV
 
         //------------------------------------------------------------------------------
 
-        public void Image( string url, string alt, string title )
+
+        public void Image(string url, string alt, string title)
         {
             var payload = new GUIContent();
-            var content = new ContentImage( payload, mStyle, mLink );
+            var content = new ContentImage(payload, mStyle, mLink);
 
-            content.URL     = url;
-            content.Alt     = alt;
-            payload.tooltip = !string.IsNullOrEmpty( title ) ? title : alt;
+            content.URL = url;
+            content.Alt = alt;
+            payload.tooltip = !string.IsNullOrEmpty(title) ? title : alt;
 
-            AddContent( content );
+            AddContent(content);
         }
+
 
         //------------------------------------------------------------------------------
 
+
         public void NewLine()
         {
-            if( mCurrentContent != null && mCurrentContent.IsEmpty )
+            if (mCurrentContent != null && mCurrentContent.IsEmpty)
             {
                 return;
             }
@@ -87,28 +141,31 @@ namespace MG.MDV
             NewContentBlock();
         }
 
+
         public void Space()
         {
-            if( CurrentBlock is BlockSpace || CurrentBlock is BlockContainer )
+            if (CurrentBlock is BlockSpace || CurrentBlock is BlockContainer)
             {
                 return;
             }
-            
-            AddBlock( new BlockSpace( mIndent ) );
+
+            AddBlock(new BlockSpace(mIndent));
         }
+
 
         public void HorizontalLine()
         {
-            if( CurrentBlock is BlockLine )
+            if (CurrentBlock is BlockLine)
             {
                 return;
             }
 
-            AddBlock( new BlockLine( mIndent ) );
+            AddBlock(new BlockLine(mIndent));
         }
 
 
         //------------------------------------------------------------------------------
+
 
         public void Indent()
         {
@@ -116,49 +173,53 @@ namespace MG.MDV
 
             mIndent += mContext.IndentSize;
 
-            if( mCurrentContent != null )
+            if (mCurrentContent != null)
             {
                 mCurrentContent.Indent = mIndent;
             }
         }
+
 
         public void Outdent()
         {
             NewLine();
 
-            mIndent = Mathf.Max( mIndent - mContext.IndentSize, 0.0f );
+            mIndent = Mathf.Max(mIndent - mContext.IndentSize, 0.0f);
 
-            if( mCurrentContent != null )
+            if (mCurrentContent != null)
             {
                 mCurrentContent.Indent = mIndent;
             }
         }
 
-        public void Prefix( string text, Style style )
-        {
-            mContext.Apply( style );
 
-            if( mCurrentContent == null )
+        public void Prefix(string text, Style style)
+        {
+            mContext.Apply(style);
+
+            if (mCurrentContent == null)
             {
                 return;
             }
 
-            var payload = new GUIContent( text );
-            var content = new ContentText( payload, style, null );
-            content.Location.size = mContext.CalcSize( payload );
+            var payload = new GUIContent(text);
+            var content = new ContentText(payload, style, null);
+            content.Location.size = mContext.CalcSize(payload);
 
-            mCurrentContent.Prefix( content );
+            mCurrentContent.Prefix(content);
         }
 
 
         //------------------------------------------------------------------------------
 
-        public void StartBlock( bool quoted )
+
+        public void StartBlock(bool quoted)
         {
             Space();
-            mCurrentContainer = AddBlock( new BlockContainer( mIndent ) { Highlight = true, Quoted = quoted} );
+            mCurrentContainer = AddBlock(new BlockContainer(mIndent) {Highlight = true, Quoted = quoted});
             CurrentBlock = null;
         }
+
 
         public void EndBlock()
         {
@@ -168,15 +229,18 @@ namespace MG.MDV
 
             Space();
         }
-        
+
+
         //------------------------------------------------------------------------------
+
 
         public void StartTable()
         {
             Space();
-            mCurrentContainer = AddBlock( new BlockContainer( mIndent ) { Quoted = false, Highlight = false} );
+            mCurrentContainer = AddBlock(new BlockContainer(mIndent) {Quoted = false, Highlight = false});
             CurrentBlock = null;
         }
+
 
         public void EndTable()
         {
@@ -190,9 +254,10 @@ namespace MG.MDV
 
         public void StartTableRow(bool isHeader)
         {
-            mCurrentContainer = AddBlock( new BlockContainer( mIndent ) { Quoted = false, Highlight = false, Horizontal = true, IsTableHeader = isHeader, IsTableRow = !isHeader} );
+            mCurrentContainer = AddBlock(new BlockContainer(mIndent) {Quoted = false, Highlight = false, Horizontal = true, IsTableHeader = isHeader, IsTableRow = !isHeader});
             CurrentBlock = null;
         }
+
 
         public void EndTableRow()
         {
@@ -201,100 +266,56 @@ namespace MG.MDV
             CurrentBlock = null;
         }
 
-        ////////////////////////////////////////////////////////////////////////////////
-        // private
-
-
-        Context         mContext;
-
-        Style           mStyle;
-        string          mLink;
-        string          mTooltip;
-        StringBuilder   mWord;
-        float           mIndent;
-
-        BlockContainer  mDocument;
-        BlockContainer  mCurrentContainer;
-        Block           mCurrentBlock;
-        BlockContent    mCurrentContent;
-
-        Block CurrentBlock
-        {
-            get
-            {
-                return mCurrentBlock;
-            }
-
-            set
-            {
-                mCurrentBlock   = value;
-                mCurrentContent = mCurrentBlock as BlockContent;
-            }
-        }
-
-
-        //------------------------------------------------------------------------------
-
-        public LayoutBuilder( Context context )
-        {
-            mContext          = context;
-
-            mStyle            = new Style();
-            mLink             = null;
-            mTooltip          = null;
-            mWord             = new StringBuilder( 1024 );
-
-            mIndent           = 0.0f;
-
-            mDocument         = new BlockContainer( mIndent );
-            mCurrentContainer = mDocument;
-            mCurrentBlock     = null;
-            mCurrentContent   = null;
-        }
 
         public Layout GetLayout()
         {
-            return new Layout( mContext, mDocument );
+            return new Layout(mContext, mDocument);
         }
+
 
         //------------------------------------------------------------------------------
 
-        void AddContent( Content content )
+
+        private void AddContent(Content content)
         {
-            if( mCurrentContent == null )
+            if (mCurrentContent == null)
             {
                 NewContentBlock();
             }
 
-            mCurrentContent.Add( content );
+            mCurrentContent.Add(content);
         }
 
-        T AddBlock<T>( T block ) where T : Block
+
+        private T AddBlock<T>(T block) where T : Block
         {
-            CurrentBlock = mCurrentContainer.Add( block );
+            CurrentBlock = mCurrentContainer.Add(block);
+
             return block;
         }
 
-        void NewContentBlock()
+
+        private void NewContentBlock()
         {
-            AddBlock( new BlockContent( mIndent ) );
- 
+            AddBlock(new BlockContent(mIndent));
+
             mStyle.Clear();
-            mContext.Apply( mStyle );
+            mContext.Apply(mStyle);
         }
 
-        void AddWord()
+
+        private void AddWord()
         {
-            if( mWord.Length == 0 )
+            if (mWord.Length == 0)
             {
                 return;
             }
 
-            var payload = new GUIContent( mWord.ToString(), mTooltip );
-            var content = new ContentText( payload, mStyle, mLink );
-            content.CalcSize( mContext );
+            var payload = new GUIContent(mWord.ToString(), mTooltip);
+            var content = new ContentText(payload, mStyle, mLink);
+            content.CalcSize(mContext);
 
-            AddContent( content );
+            AddContent(content);
 
             mWord.Length = 0;
         }

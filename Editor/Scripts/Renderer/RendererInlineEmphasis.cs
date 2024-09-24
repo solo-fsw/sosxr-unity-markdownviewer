@@ -3,19 +3,19 @@
 using Markdig.Renderers;
 using Markdig.Syntax.Inlines;
 
+
 namespace MG.MDV
 {
     ////////////////////////////////////////////////////////////////////////////////
     // <b><i>...</i></b>
-    /// <see cref="Markdig.Renderers.Html.Inlines.EmphasisInlineRenderer"/>
-
+    /// <see cref="Markdig.Renderers.Html.Inlines.EmphasisInlineRenderer" />
     public class RendererInlineEmphasis : MarkdownObjectRenderer<RendererMarkdown, EmphasisInline>
     {
-        protected override void Write( RendererMarkdown renderer, EmphasisInline node )
+        protected override void Write(RendererMarkdown renderer, EmphasisInline node)
         {
-            bool prev = false;
+            var prev = false;
 
-            if( node.IsDouble )
+            if (node.IsDouble)
             {
                 prev = renderer.Style.Bold;
                 renderer.Style.Bold = true;
@@ -26,9 +26,9 @@ namespace MG.MDV
                 renderer.Style.Italic = true;
             }
 
-            renderer.WriteChildren( node );
+            renderer.WriteChildren(node);
 
-            if( node.IsDouble )
+            if (node.IsDouble)
             {
                 renderer.Style.Bold = prev;
             }
@@ -39,4 +39,3 @@ namespace MG.MDV
         }
     }
 }
-

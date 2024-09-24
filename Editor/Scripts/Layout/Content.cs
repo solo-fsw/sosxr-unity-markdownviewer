@@ -1,59 +1,66 @@
 ﻿using System.Text.RegularExpressions;
+using UnityEditor;
 using UnityEngine;
+
 
 namespace MG.MDV
 {
     public abstract class Content
     {
-        public Rect         Location;
-        public Style        Style;
-        public GUIContent   Payload;
-        public string       Link;
+        public Rect Location;
+        public Style Style;
+        public GUIContent Payload;
+        public string Link;
 
-        public float Width      { get { return Location.width; } }
-        public float Height     { get { return Location.height; } }
-        public bool  CanUpdate  { get { return false; } }
 
-        public Content( GUIContent payload, Style style, string link )
+        public Content(GUIContent payload, Style style, string link)
         {
             Payload = payload;
             Style = style;
             Link = link;
         }
 
-        public void CalcSize( Context context )
+
+        public float Width => Location.width;
+        public float Height => Location.height;
+        public bool CanUpdate => false;
+
+
+        public void CalcSize(Context context)
         {
-            Location.size = context.CalcSize( Payload );
+            Location.size = context.CalcSize(Payload);
         }
 
-        public void Draw( Context context )
+
+        public void Draw(Context context)
         {
-            if( string.IsNullOrEmpty( Link ) )
+            if (string.IsNullOrEmpty(Link))
             {
-                GUI.Label( Location, Payload, context.Apply( Style ) );
+                GUI.Label(Location, Payload, context.Apply(Style));
+
                 return;
             }
 
-#if UNITY_EDITOR
-            UnityEditor.EditorGUIUtility.AddCursorRect( Location, UnityEditor.MouseCursor.Link );
-#endif
+            #if UNITY_EDITOR
+            EditorGUIUtility.AddCursorRect(Location, MouseCursor.Link);
+            #endif
 
-            if( GUI.Button( Location, Payload, context.Apply( Style ) ) )
+            if (GUI.Button(Location, Payload, context.Apply(Style)))
             {
-                if( Regex.IsMatch( Link, @"^\w+:", RegexOptions.Singleline ) )
+                if (Regex.IsMatch(Link, @"^\w+:", RegexOptions.Singleline))
                 {
-                    Application.OpenURL( Link );
+                    Application.OpenURL(Link);
                 }
                 else
                 {
-                    context.SelectPage( Link );
+                    context.SelectPage(Link);
                 }
             }
         }
 
-        public virtual void Update( Context context )
+
+        public virtual void Update(Context context)
         {
         }
     }
 }
-
