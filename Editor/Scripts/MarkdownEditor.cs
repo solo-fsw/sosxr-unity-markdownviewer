@@ -13,9 +13,9 @@ namespace MG.MDV
         public GUISkin SkinLight;
         public GUISkin SkinDark;
 
-        private MarkdownViewer mViewer;
-
         private static readonly List<string> mExtensions = new() {".md", ".markdown"};
+
+        private MarkdownViewer mViewer;
 
 
         //------------------------------------------------------------------------------

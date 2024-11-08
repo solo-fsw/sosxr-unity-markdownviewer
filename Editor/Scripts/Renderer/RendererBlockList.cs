@@ -30,7 +30,7 @@ namespace MG.MDV
 
             for (var i = 0; i < block.Count; i++)
             {
-                layout.Prefix(block.IsOrdered ? (i + 1) + "." : "\u2022", prefixStyle);
+                layout.Prefix(block.IsOrdered ? i + 1 + "." : "\u2022", prefixStyle);
                 renderer.WriteChildren(block[i] as ListItemBlock);
             }
 
