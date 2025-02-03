@@ -12,5 +12,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/gwaredd/UnityMarkdownViewer.git"
-  }
+  },
+  "changelogUrl": "https://github.com/solo-fsw/sosxr-unity-markdownviewer/blob/main/CHANGELOG.md"
 }
