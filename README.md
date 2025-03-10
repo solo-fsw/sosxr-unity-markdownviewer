@@ -1,6 +1,8 @@
 # Unity Markdown Viewer (UMV)
 > A markdown viewer for unity
 
+## Depricated: this is now maintained in [EditorSpice](https://github.com/solo-fsw/sosxr-unity-editorspice)
+
 UMV is a Unity editor extension for displaying markdown files in the inspector window.
 
 It should _just work_ without any setup or configuration.
